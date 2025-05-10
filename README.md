@@ -9,6 +9,7 @@ A decentralized, open-access, cross-platform VPN network that allows anyone to r
 - Decentralized node discovery
 - Automatic node selection based on performance
 - Built on WireGuard for security and performance
+- GitHub integration test
 
 ## Quick Start
 
