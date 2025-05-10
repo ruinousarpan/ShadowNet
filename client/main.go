@@ -25,65 +25,62 @@ func main() {
 		log.Fatalf("Failed to create config directory: %v", err)
 	}
 
-	// Fetch available nodes
-	nodes, err := fetchNodes()
+	// Load nodes from bootstrap.json
+	nodes, err := loadNodes("../bootstrap/bootstrap.json")
 	if err != nil {
-		log.Fatalf("Failed to fetch nodes: %v", err)
+		log.Fatalf("Failed to load nodes: %v", err)
 	}
 
-	// Find the fastest node
-	fastestNode := findFastestNode(nodes)
+	// Select the fastest node
+	fastestNode := selectFastestNode(nodes)
 	if fastestNode == nil {
-		log.Fatal("No available nodes found")
+		log.Fatalf("No nodes available")
 	}
 
-	fmt.Printf("Connecting to node in %s (ping: %dms)\n", fastestNode.Country, fastestNode.Ping)
+	fmt.Printf("Connecting to the fastest node: %s (%s) with ping %dms\n", fastestNode.IP, fastestNode.Country, fastestNode.Ping)
 
 	// Generate WireGuard configuration
-	if err := generateWireGuardConfig(fastestNode, configDir); err != nil {
+	err = generateWireGuardConfig(fastestNode, configDir)
+	if err != nil {
 		log.Fatalf("Failed to generate WireGuard config: %v", err)
 	}
 
-	// Start WireGuard connection
-	if err := startWireGuard(configDir); err != nil {
-		log.Fatalf("Failed to start WireGuard: %v", err)
+	// Establish WireGuard connection
+	err = connectWireGuard(configDir)
+	if err != nil {
+		log.Fatalf("Failed to connect to WireGuard: %v", err)
 	}
 
-	fmt.Println("Connected to ShadowNet!")
+	fmt.Println("Connected successfully!")
 	fmt.Println("Press Ctrl+C to disconnect")
 
 	// Keep the program running
 	select {}
 }
 
-func fetchNodes() ([]Node, error) {
-	// In a real implementation, this would fetch from multiple sources
-	// For now, we'll just read from bootstrap.json
-	data, err := ioutil.ReadFile("../bootstrap/bootstrap.json")
+func loadNodes(filePath string) ([]Node, error) {
+	data, err := ioutil.ReadFile(filePath)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read bootstrap.json: %v", err)
+		return nil, err
 	}
 
 	var nodes []Node
-	if err := json.Unmarshal(data, &nodes); err != nil {
-		return nil, fmt.Errorf("failed to parse bootstrap.json: %v", err)
+	err = json.Unmarshal(data, &nodes)
+	if err != nil {
+		return nil, err
 	}
 
 	return nodes, nil
 }
 
-func findFastestNode(nodes []Node) *Node {
-	if len(nodes) == 0 {
-		return nil
-	}
-
-	fastest := nodes[0]
+func selectFastestNode(nodes []Node) *Node {
+	var fastestNode *Node
 	for _, node := range nodes {
-		if node.Ping < fastest.Ping {
-			fastest = node
+		if fastestNode == nil || node.Ping < fastestNode.Ping {
+			fastestNode = &node
 		}
 	}
-	return &fastest
+	return fastestNode
 }
 
 func generateWireGuardConfig(node *Node, configDir string) error {
@@ -127,7 +124,7 @@ PersistentKeepalive = 25
 	return nil
 }
 
-func startWireGuard(configDir string) error {
+func connectWireGuard(configDir string) error {
 	// Check if WireGuard is installed
 	if _, err := exec.LookPath("wg-quick"); err != nil {
 		return fmt.Errorf("WireGuard is not installed: %v", err)

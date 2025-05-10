@@ -33,9 +33,6 @@ Address = 10.0.0.1/24
 ListenPort = 51820
 PostUp = iptables -A FORWARD -i wg0 -j ACCEPT; iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
 PostDown = iptables -D FORWARD -i wg0 -j ACCEPT; iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE
-
-# Enable IP forwarding
-net.ipv4.ip_forward = 1
 EOF
 
 # Enable IP forwarding
@@ -63,4 +60,4 @@ EOF
 
 echo "Node setup complete!"
 echo "Public Key: $WG_PUBLIC_KEY"
-echo "Node information saved to bootstrap/node_info.json" 
+echo "Node information saved to bootstrap/node_info.json"
