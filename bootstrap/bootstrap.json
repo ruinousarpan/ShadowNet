@@ -1,0 +1,23 @@
+[
+    {
+        "ip": "192.0.2.1",
+        "port": 51820,
+        "public_key": "example_public_key_1",
+        "country": "US",
+        "ping": 40
+    },
+    {
+        "ip": "192.0.2.2",
+        "port": 51820,
+        "public_key": "example_public_key_2",
+        "country": "DE",
+        "ping": 60
+    },
+    {
+        "ip": "192.0.2.3",
+        "port": 51820,
+        "public_key": "example_public_key_3",
+        "country": "JP",
+        "ping": 120
+    }
+] 
